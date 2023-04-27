@@ -70,7 +70,7 @@ export const treeSlice = createSlice({
       state.treeData = findPositionAndAddItem(
         state.treeData,
         state.selected,
-        action.payload.veri
+        action.payload.label
       );
     },
   },

@@ -9,13 +9,13 @@ import { useDispatch, useSelector } from "react-redux";
 export default function TreeviewForm() {
   const dispatch = useDispatch();
   const treeData = useSelector(selectTreeState);
-  const [veri, setVeri] = React.useState("");
+  const [label, setLabel] = React.useState("");
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     console.log("handleSubmit");
     event.preventDefault();
     const response = await fetch("/api/trees", {
       method: "POST",
-      body: JSON.stringify({ veri }),
+      body: JSON.stringify({ label }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -28,10 +28,10 @@ export default function TreeviewForm() {
     }
     dispatch(
       addTree({
-        veri,
+        label,
       })
     );
-    setVeri("");
+    setLabel("");
   };
 
   return (
@@ -41,8 +41,8 @@ export default function TreeviewForm() {
         size="small"
         style={{ width: 150 }}
         name="veri"
-        value={veri}
-        onChange={(e) => setVeri(e.target.value)}
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
       ></TextField>
       <Button type="submit">Ekle</Button>
     </FormControl>
