@@ -11,21 +11,21 @@ export default function TreeviewForm() {
   const treeData = useSelector(selectTreeState);
   const [veri, setVeri] = React.useState("");
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    console.log("handleSubmit");
     event.preventDefault();
-    // Form verisini API rotasına gönder
-    //     const response = await fetch('/api/trees', {
-    //     method: 'POST',
-    //     body: JSON.stringify({ veri}),
-    //     headers: {
-    //       'Content-Type': 'application/json'
-    //     }
-    //   });
+    const response = await fetch("/api/trees", {
+      method: "POST",
+      body: JSON.stringify({ veri }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-    //   if (response.ok) {
-    //     console.log('Veri başarıyla kaydedildi.');
-    //   } else {
-    //     console.error('Veri kaydedilirken bir hata oluştu.');
-    //   }
+    if (response.ok) {
+      console.log("Veri başarıyla kaydedildi.");
+    } else {
+      console.error("Veri kaydedilirken bir hata oluştu.");
+    }
     dispatch(
       addTree({
         veri,

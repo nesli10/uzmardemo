@@ -34,7 +34,7 @@ const saveDataApiRoute = async (req: NextApiRequest, res: NextApiResponse) => {
       fs.writeFileSync(filePath, JSON.stringify(updatedData), "utf-8");
       res.status(200).json({ message: "veri başarıyla güncellendi" });
     } catch (error) {
-      res.status(500).json({ message: "veri güncellenirken hat oldu" });
+      res.status(500).json({ message: "veri güncellenirken hata oldu" });
     }
   } else if (req.method === "DELETE") {
     try {
