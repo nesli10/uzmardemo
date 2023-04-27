@@ -11,7 +11,6 @@ export default function TreeviewForm() {
   const treeData = useSelector(selectTreeState);
   const [label, setLabel] = React.useState("");
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    console.log("handleSubmit");
     event.preventDefault();
     const response = await fetch("/api/trees", {
       method: "POST",

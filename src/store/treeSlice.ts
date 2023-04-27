@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { AppState } from "./store";
 import { HYDRATE } from "next-redux-wrapper";
-import tree from "tree.json";
 
 export interface treeDataItem {
   label: String;
