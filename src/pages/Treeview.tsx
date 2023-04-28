@@ -17,16 +17,6 @@ function renderTree(nodes: any) {
     </TreeItem>
   );
 }
-// export async function getStaticProps() {
-//   const res = await fetch("path/to/json/tree.json");
-//   const treeData = await res.json();
-
-//   return {
-//     props: {
-//       treeData,
-//     },
-//   };
-// }
 
 export default function Treeview() {
   const dispatch = useDispatch();

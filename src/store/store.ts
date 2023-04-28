@@ -2,8 +2,9 @@ import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import { authSlice } from "./authSlice";
 import { createWrapper } from "next-redux-wrapper";
 import { treeSlice } from "./treeSlice";
-
-
+import createSagaMiddleware from "redux-saga";
+import treeSaga from "./treeSaga";
+const sagaMiddleware = createSagaMiddleware();
 const makeStore = () =>
   configureStore({
     reducer: {
@@ -11,7 +12,10 @@ const makeStore = () =>
       [treeSlice.name]: treeSlice.reducer,
     },
     devTools: true,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(sagaMiddleware),
   });
+sagaMiddleware.run(treeSaga);
 
 export type AppStore = ReturnType<typeof makeStore>;
 export type AppState = ReturnType<AppStore["getState"]>;
