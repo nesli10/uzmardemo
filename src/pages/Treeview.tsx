@@ -9,13 +9,14 @@ import { setSelected } from "../store/treeSlice";
 import { useDispatch } from "react-redux";
 
 function renderTree(nodes: any) {
-  return (
-    <TreeItem nodeId={nodes.id} label={nodes.label}>
-      {Array.isArray(nodes.children)
-        ? nodes.children.map((node: any) => renderTree(node))
-        : null}
-    </TreeItem>
-  );
+  if (nodes)
+    return (
+      <TreeItem nodeId={nodes.id} label={nodes.label}>
+        {Array.isArray(nodes.children)
+          ? nodes.children.map((node: any) => renderTree(node))
+          : null}
+      </TreeItem>
+    );
 }
 
 export default function Treeview() {

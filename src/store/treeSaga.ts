@@ -1,5 +1,5 @@
-import { call, put, takeLatest } from "redux-saga/effects";
-import { addTree } from "./treeSlice";
+import { call, put, takeEvery } from "redux-saga/effects";
+import { getData } from "./treeSlice";
 
 const getTrees = () => {
   return fetch("http://localhost:3000/api/trees")
@@ -7,11 +7,11 @@ const getTrees = () => {
     .catch((error) => ({ error }));
 };
 
-function* getTreesSaga() {
+function* getTreesSaga(): any {
   const { response, error } = yield call(getTrees);
   if (response) {
     const data = yield response.json();
-    yield put({ type: "addTree", payload: data });
+    yield put(getData(data));
   } else {
     console.log("error: ", error.message);
     //yield put({ type: 'GET_USERS_FAILED', message: error.message })
@@ -19,5 +19,5 @@ function* getTreesSaga() {
 }
 
 export default function* treeSaga() {
-  yield [takeLatest("tree/addTree", getTreesSaga)];
+  yield takeEvery("GET_ALL_TREE", getTreesSaga);
 }

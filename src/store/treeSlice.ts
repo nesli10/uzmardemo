@@ -4,32 +4,18 @@ import { HYDRATE } from "next-redux-wrapper";
 
 export interface treeDataItem {
   label: String;
-  id: Number;
+  id: string;
+  parentId?: string;
   children?: Array<treeDataItem>;
 }
 
 interface initialStateInterface {
-  treeData: treeDataItem;
+  treeData?: treeDataItem;
   selected: any;
   maxId: any;
 }
 // Initial state
 const initialState: initialStateInterface = {
-  treeData: {
-    label: "Main",
-    id: 1,
-    children: [
-      {
-        label: "Sub Menu 2",
-        id: 2,
-        children: [
-          { label: "Sub Menu 4", id: 4 },
-          { label: "Sub Menu 5", id: 5 },
-        ],
-      },
-      { label: "Sub Menu", id: 3 },
-    ],
-  },
   selected: 1,
   maxId: 5,
 };
@@ -72,6 +58,25 @@ export const treeSlice = createSlice({
         action.payload.label
       );
     },
+    getData: (state, action) => {
+      let listedTreeData = action.payload;
+      let treeData: Array<treeDataItem> = [];
+      const listedDataParser = (
+        node: Array<treeDataItem>,
+        parentId?: string
+      ) => {
+        listedTreeData.forEach((element: treeDataItem) => {
+          if (element.parentId === parentId) {
+            node.push(element);
+            element.children = [];
+            listedDataParser(element.children, element.id);
+          }
+        });
+      };
+      listedDataParser(treeData);
+      console.log(treeData[0]);
+      state.treeData = treeData[0];
+    },
   },
 
   // Special reducer for hydrating the state. Special case for next-redux-wrapper
@@ -85,6 +90,6 @@ export const treeSlice = createSlice({
   },
 });
 
-export const { addTree, setSelected } = treeSlice.actions;
+export const { addTree, setSelected, getData } = treeSlice.actions;
 export const selectTreeState = (state: AppState) => state.tree.treeData;
 export default treeSlice.reducer;

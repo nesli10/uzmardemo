@@ -10,7 +10,7 @@ const filePath = path.join(process.cwd(), "tree.json");
 const saveDataApiRoute = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
     // Gönderilen veriyi al
-    const { label, children, id } = req.body;
+    const { label, parentId, id } = req.body;
 
     // JSON dosyasına veriyi kaydet
     try {
@@ -20,15 +20,15 @@ const saveDataApiRoute = async (req: NextApiRequest, res: NextApiResponse) => {
       // Yeni veriyi ekle
       let newData = {
         label,
-        children: [],
+        parentId,
         id: uuidv4(),
       };
       existingData.push(newData);
       // JSON dosyasına güncellenmiş veriyi kaydet
       fs.writeFileSync(filePath, JSON.stringify(existingData));
 
-      console.log(existingData);
-      console.log("Veri JSON dosyasına kaydedildi.");
+      //console.log(existingData);
+      //console.log("Veri JSON dosyasına kaydedildi.");
       res.status(200).json({ message: "Veri başarıyla kaydedildi." });
     } catch (error) {
       console.error(
