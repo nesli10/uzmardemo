@@ -9,24 +9,15 @@ import { setSelected } from "../store/treeSlice";
 import { useDispatch } from "react-redux";
 
 function renderTree(nodes: any) {
-  return (
-    <TreeItem nodeId={nodes.id} label={nodes.label}>
-      {Array.isArray(nodes.children)
-        ? nodes.children.map((node: any) => renderTree(node))
-        : null}
-    </TreeItem>
-  );
+  if (nodes)
+    return (
+      <TreeItem nodeId={nodes.id} label={nodes.label}>
+        {Array.isArray(nodes.children)
+          ? nodes.children.map((node: any) => renderTree(node))
+          : null}
+      </TreeItem>
+    );
 }
-// export async function getStaticProps() {
-//   const res = await fetch("path/to/json/tree.json");
-//   const treeData = await res.json();
-
-//   return {
-//     props: {
-//       treeData,
-//     },
-//   };
-// }
 
 export default function Treeview() {
   const dispatch = useDispatch();
