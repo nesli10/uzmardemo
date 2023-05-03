@@ -8,13 +8,13 @@ import { useDispatch, useSelector } from "react-redux";
 
 export default function TreeviewForm() {
   const dispatch = useDispatch();
-  const treeData = useSelector(selectTreeState);
+  const selectedTreeItem = useSelector(selectTreeState);
   const [label, setLabel] = React.useState("");
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const response = await fetch("/api/trees", {
       method: "POST",
-      body: JSON.stringify({ label }),
+      body: JSON.stringify({ label, parentId: selectedTreeItem?.id }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -47,3 +47,4 @@ export default function TreeviewForm() {
     </FormControl>
   );
 }
+
