@@ -12,12 +12,10 @@ export interface treeDataItem {
 interface initialStateInterface {
   treeData?: treeDataItem;
   selected: any;
-  maxId: any;
 }
 // Initial state
 const initialState: initialStateInterface = {
   selected: 1,
-  maxId: 5,
 };
 
 // Actual Slice
@@ -30,8 +28,7 @@ export const treeSlice = createSlice({
     },
     // Action to add tree
     addTree: (state, action) => {
-      const maxId = state.maxId + 1;
-      state.maxId = maxId;
+      const maxId = action.payload.id;
       const findPositionAndAddItem = (state: any, id: any, label: any) => {
         if (state.hasOwnProperty("id") && state.id === id) {
           if (!state.hasOwnProperty("children")) {
@@ -92,4 +89,5 @@ export const treeSlice = createSlice({
 
 export const { addTree, setSelected, getData } = treeSlice.actions;
 export const selectTreeState = (state: AppState) => state.tree.treeData;
+export const selectedTreeState: any = (state: AppState) => state.tree.selected;
 export default treeSlice.reducer;

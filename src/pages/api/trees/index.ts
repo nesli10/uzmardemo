@@ -17,11 +17,13 @@ const saveDataApiRoute = async (req: NextApiRequest, res: NextApiResponse) => {
       // JSON dosyasındaki mevcut veriyi oku
       const existingData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
+      const id = uuidv4();
+
       // Yeni veriyi ekle
       let newData = {
         label,
         parentId,
-        id: uuidv4(),
+        id,
       };
       existingData.push(newData);
       // JSON dosyasına güncellenmiş veriyi kaydet
@@ -29,7 +31,7 @@ const saveDataApiRoute = async (req: NextApiRequest, res: NextApiResponse) => {
 
       //console.log(existingData);
       //console.log("Veri JSON dosyasına kaydedildi.");
-      res.status(200).json({ message: "Veri başarıyla kaydedildi." });
+      res.status(200).json({ message: "Veri başarıyla kaydedildi.", id }); // frontendin okuyabilmesi için
     } catch (error) {
       console.error(
         "JSON dosyasına veri kaydedilirken bir hata oluştu:",

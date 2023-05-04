@@ -7,11 +7,13 @@ import { selectTreeState } from "../store/treeSlice";
 import { useSelector } from "react-redux";
 import { setSelected } from "../store/treeSlice";
 import { useDispatch } from "react-redux";
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 function renderTree(nodes: any) {
   if (nodes)
     return (
-      <TreeItem nodeId={nodes.id} label={nodes.label}>
+      <TreeItem nodeId={nodes.id.toString()} label={nodes.label}>
         {Array.isArray(nodes.children)
           ? nodes.children.map((node: any) => renderTree(node))
           : null}
