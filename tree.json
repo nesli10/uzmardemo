@@ -3,7 +3,6 @@
     "label": "Main Menu",
     "children": [],
     "id": "2bf2213e-746e-45fb-9e9a-4d35c16ee8a1"
-<<<<<<< HEAD
   },
   {
     "label": "Yeni Menü",
@@ -19,19 +18,5 @@
     "label": "yeni menü 3",
     "parentId": "3fac126b-577a-446a-951d-9dabc69a6ef1",
     "id": "d34de0b6-a5a8-4525-b533-5a4c8fa278e9"
-=======
-  },
-  { "label": "Sub Menu 2", "id": "728d6182-11fc-41bf-987b-1d6d84f740c2" },
-  {
-    "label": "Sub Menu",
-    "parentId": "2bf2213e-746e-45fb-9e9a-4d35c16ee8a1",
-    "id": "a345a776-3f7f-4437-a6af-ffc26e7e53e0"
-  },
-  {
-    "label": "sub menu2",
-    "parentId": "2bf2213e-746e-45fb-9e9a-4d35c16ee8a1",
-    "id": "5cb917fb-e76a-4fc2-b1c8-6e8fbbb73f3c"
->>>>>>> 34dd036f86fbcb32d71e1872d9d9922eb6a9d3cc
   }
 ]
-
