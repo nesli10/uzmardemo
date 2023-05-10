@@ -1,24 +1,15 @@
 import { Server } from "socket.io";
 
-let todoList: any = [];
-
-export default function handler(req: any, res: any) {
-  const io = new Server().attach(3000);
+export default function socketHandler(req: any, res: any) {
+  const io = new Server(res.socket.server);
+  res.socket.server.io = io;
 
   io.on("connection", (socket) => {
-    console.log("a user connected");
-
-    io.emit("todoList", todoList);
-
-    socket.on("addTodo", (newTodo) => {
-      todoList.push(newTodo);
-      io.emit("todoList", todoList);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("user disconnected");
+    socket.on("send-message", (obj) => {
+      io.emit("receive-message", obj);
     });
   });
 
-  res.status(200).json({ message: "Socket.IO server started" });
+  console.log("Setting Socket");
+  res.end();
 }
