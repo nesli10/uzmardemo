@@ -1,15 +1,30 @@
-import { Server } from "socket.io";
+import { NextApiRequest } from "next";
+import { Server as ServerIO } from "socket.io";
 
-export default function socketHandler(req: any, res: any) {
-  const io = new Server(res.socket.server);
-  res.socket.server.io = io;
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
-  io.on("connection", (socket) => {
-    socket.on("send-message", (obj) => {
-      io.emit("receive-message", obj);
+export default async (req: NextApiRequest, res: any) => {
+  if (!res.socket.server.io) {
+    console.log("New Socket.io server...");
+    const io = new ServerIO(res.socket.server, {
+      addTrailingSlash: false // important 404 vs
     });
-  });
+    // append SocketIO server to Next.js socket server response
+    res.socket.server.io = io;
+    const onConnection = (socket:any) => {
+      socket.on("send-message", (obj:any) => {
+        console.log('new Message',obj);
+        io.emit("receive-message", obj);
+      });
+      console.log('New Connection',socket.id);
+    };
+    io.on('connection',onConnection);
+    console.log("Server Started.");
+  }
 
-  console.log("Setting Socket");
   res.end();
-}
+};

@@ -1,62 +1,72 @@
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
-let socket: any;
+
+let socket:any;
 
 const Home = () => {
-  const [username, setUsername] = useState("");
   const [message, setMessage] = useState("");
-  const [allMessages, setAllMessages] = useState<any[]>([""]);
+  const [username, setUsername] = useState("");
+  const [allMessages, setAllMessages] = useState<any[]>([]);
 
   useEffect(() => {
-    socketInitilizer();
+    socketInitializer();
+
+    return () => {
+      socket?.disconnect();
+    };
   }, []);
 
-  function socketInitilizer() {
-    fetch("/api/socket")
-      .then(() => {
-        socket = io();
-        console.log("test");
-        socket.on("receive-message", (data: any) => {
-          console.log(data);
-          setAllMessages((pre: any) => [...pre, data]);
-        });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+  async function socketInitializer() {
+    await fetch("/api/socket");
+
+    socket = io();
+
+    socket.on("receive-message", (data:any) => {
+      setAllMessages((pre:any)=>{return [...pre, data];});
+    });
   }
 
-  function handleSubmit(e: any) {
+  function handleSubmit(e:any) {
     e.preventDefault();
+
+    console.log("emitted");
+
     socket.emit("send-message", {
       username,
-      message,
+      message
     });
+    setMessage("");
   }
 
   return (
     <div>
-      <h1>Chat App</h1>
-      <p>Enter Username</p>
+      <h1>Chat app</h1>
+      <h1>Enter a username</h1>
+
       <input value={username} onChange={(e) => setUsername(e.target.value)} />
-      <br></br>
+
       <br />
-      {!!username && (
-        <div>
-          {allMessages.map(({ username, message }: any) => (
-            <p>
-              {username}: {message}
-            </p>
-          ))}
-          <form onSubmit={handleSubmit}>
-            <input
-              name="message"
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <button type="submit">Send</button>
-          </form>
-        </div>
-      )}
+      <br />
+
+      <div>
+        {allMessages.map(({ username, message }, index) => (
+          <div key={index}>
+            {username}: {message}
+          </div>
+        ))}
+
+        <br />
+
+        <form onSubmit={handleSubmit}>
+          <input
+            name="message"
+            placeholder="enter your message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            autoComplete={"off"}
+          />
+        </form>
+      </div>
     </div>
   );
 };
