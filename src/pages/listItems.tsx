@@ -23,5 +23,13 @@ export const mainListItems = (
         <ListItemText primary="Chat" />
       </Link>
     </ListItemButton>
+    <ListItemButton>
+      <ListItemIcon>
+        <ShoppingCartIcon />
+      </ListItemIcon>
+      <Link href="/Game" style={{ textDecoration: "none" }}>
+        <ListItemText primary="Game" />
+      </Link>
+    </ListItemButton>
   </React.Fragment>
 );
