@@ -18,15 +18,18 @@ const Game = () => {
     setWord(wordsData.words[randomIndex].toLowerCase());
   };
 
-  const handleGuess = (letter: any) => {
+  const handleGuess = (letter: any,event: any) => {
     const lowercaseLetter = letter.toLowerCase();
     setGuesses([...guesses, lowercaseLetter]);
 
     if (word.includes(lowercaseLetter)) {
       const updatedScore = score + 10;
+      event.target.disabled = 'disabled';
+      event.target.setAttribute('founded', 'founded');
       setScore(updatedScore);
     } else {
       const updatedAttempts = remainingAttempts - 1;
+      event.target.disabled = 'disabled';
       setRemainingAttempts(updatedAttempts);
     }
   };
@@ -71,7 +74,7 @@ const Game = () => {
       <button
         className={styles.word_button}
         key={letter}
-        onClick={() => handleGuess(letter)}
+        onClick={(e) => handleGuess(letter,e)}
         disabled={guesses.includes(letter) || remainingAttempts <= 0}
       >
         {letter}

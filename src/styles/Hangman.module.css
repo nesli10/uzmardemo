@@ -23,7 +23,7 @@
 .button_container {
   gap: 10px;
   width: 400px;
-  margin-left: 45rem;
+  margin: 0 auto;
 }
 
 .restart_button {
@@ -51,9 +51,24 @@
   outline: none;
   background-color: #859945;
   color: #fff;
-  box-shadow: 0 6px #9cb051;
   border-radius: 5px;
   padding-top: 4px;
+}
+.word_button:disabled {
+  background-color: #e5e8db;
+  cursor: default;
+}
+.word_button:disabled:hover {
+  background-color: #e5e8db;
+  cursor: default;
+}
+.word_button[founded] {
+  background-color: #c3ff00;
+  cursor: default;
+}
+.word_button[founded]:hover {
+  background-color: #c3ff00;
+  cursor: default;
 }
 .word_button:hover {
   background-color: #9cb051;
