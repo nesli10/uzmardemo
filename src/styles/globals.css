@@ -31,11 +31,11 @@ svg {
 @import "@radix-ui/colors/violet.css";
 
 /* reset */
-button,
+/* button,
 fieldset,
 input {
   all: unset;
-}
+} */
 
 .TabsRoot {
   display: flex;

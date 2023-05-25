@@ -43,23 +43,23 @@
 .word_button {
   border: none;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 1.6rem;
   cursor: pointer;
   width: 30px;
   margin: 5px 2px 2px 2px;
   letter-spacing: 1px;
   outline: none;
-  background-color: #859945;
+  background-color: #28c0d4;
   color: #fff;
   border-radius: 5px;
   padding-top: 4px;
 }
 .word_button:disabled {
-  background-color: #e5e8db;
+  background-color: #acaca6;
   cursor: default;
 }
 .word_button:disabled:hover {
-  background-color: #e5e8db;
+  background-color: #acaca6;
   cursor: default;
 }
 .word_button[founded] {
@@ -71,7 +71,7 @@
   cursor: default;
 }
 .word_button:hover {
-  background-color: #9cb051;
+  background-color: #50cbdb;
 }
 
 .score {
