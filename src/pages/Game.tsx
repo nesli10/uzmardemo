@@ -37,7 +37,7 @@ const Game = () => {
 
     const socket = io();
 
-    socket.emit("joinRoom", { username, room }, (success: any) => {
+    socket.emit("joinRoom", { username, room }, (success: boolean) => {
       if (success) {
         setWaitingForSecondPlayer(true);
         setSocket(socket);
@@ -62,30 +62,17 @@ const Game = () => {
         setOpponentScore(opponent.score);
       }
     );
-
-    socket.on("wordSelected", (selectedWord: string) => {
-      setWord(selectedWord.toLowerCase());
-    });
   }
 
   const handleGuess = (letter: any, event: any) => {
-    //oyuncunun kendi tahmini
     const lowercaseLetter = letter.toLowerCase();
     setGuesses([...guesses, lowercaseLetter]);
 
     if (word.includes(lowercaseLetter)) {
       const updatedScore = score + 10;
       event.target.disabled = "disabled";
-      event.target.setAttribute("founded", "founded");
+      event.currentTarget.setAttribute("founded", "founded");
       setScore(updatedScore);
-      if (socket) {
-        socket.emit("guessMade", {
-          letter,
-          room,
-          username,
-          score: updatedScore,
-        });
-      }
     } else {
       const updatedAttempts = remainingAttempts - 1;
       event.target.disabled = "disabled";
@@ -148,7 +135,11 @@ const Game = () => {
         <Alert
           variant="filled"
           severity="success"
-          style={{ width: "20rem", alignItems: "center", marginLeft: "47rem" }}
+          style={{
+            width: "20rem",
+            alignItems: "center",
+            marginLeft: "47rem",
+          }}
         >
           Congratulations! You won!
         </Alert>
@@ -158,7 +149,11 @@ const Game = () => {
         <Alert
           variant="filled"
           severity="error"
-          style={{ width: "20rem", alignItems: "center", marginLeft: "47rem" }}
+          style={{
+            width: "20rem",
+            alignItems: "center",
+            marginLeft: "47rem",
+          }}
         >
           Game over! You lost. The word was: {word}
         </Alert>
@@ -167,6 +162,7 @@ const Game = () => {
       return null;
     }
   };
+
   const handleRestart = () => {
     setGuesses([]);
     setRemainingAttempts(6);
@@ -183,19 +179,6 @@ const Game = () => {
       button.removeAttribute("founded");
     });
   };
-
-  useEffect(() => {
-    if (socket) {
-      socket.on("guessMade", (data: any) => {
-        const { letter, username: playerUsername, score: playerScore } = data;
-        if (playerUsername !== username) {
-          handleGuess(letter, { target: { disabled: "disabled" } });
-
-          setOpponentScore(playerScore);
-        }
-      });
-    }
-  }, [socket, username]);
 
   return (
     <div className={styles.hangman_game}>

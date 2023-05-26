@@ -8,7 +8,8 @@ export const config = {
   },
 };
 
-const rooms = new Map<string, any[]>();
+const users = new Map<string, any>();
+const userRooms = new Map<string, string>();
 
 const generateWord = () => {
   const randomIndex = Math.floor(Math.random() * wordsData.words.length);
@@ -27,45 +28,48 @@ export default async (req: NextApiRequest, res: any) => {
       socket.on(
         "joinRoom",
         ({ username, room }: any, callback: (arg0: boolean) => void) => {
-          const roomPlayers = socket.rooms.get(room).clients;
-          console.log(roomPlayers);
+          const user = {
+            username,
+            socketId: socket.id,
+            score: 0,
+          };
 
-          if (roomPlayers?.length === 2) {
+          users.set(socket.id, user);
+          userRooms.set(socket.id, room); // kullanıcının hangi odada olduğu
+
+          const playersInRoom = Array.from(users.values()).filter(
+            (player) => userRooms.get(player.socketId) === room
+          );
+
+          if (playersInRoom.length === 2) {
             const word = generateWord();
-            io.to(room).emit("gameStarted", {
-              word,
-              opponent: roomPlayers,
-            });
-          }
+            const [player1, player2] = playersInRoom;
 
-          if (roomPlayers?.length < 2) {
+            io.to(player1.socketId).emit("gameStarted", {
+              word,
+              opponent: player2.username,
+            });
+
+            io.to(player2.socketId).emit("gameStarted", {
+              word,
+              opponent: player1.username,
+            });
+          } else if (playersInRoom.length > 2) {
+            // Eğer iki oyuncudan fazlası varsa yeni bir oda oluştur
+            const newRoom = room + "-" + Date.now(); // Yeni oda adı
+            userRooms.set(socket.id, newRoom); // Kullanıcıyı yeni odaya taşı
+
+            socket.join(newRoom);
+            socket.join(newRoom + "." + username);
+            callback(true);
+          } else {
             socket.join(room);
             socket.join(room + "." + username);
             callback(true);
           }
-          callback(false);
         }
       );
 
-      socket.on("guessMade", ({ letter, room, username, score }: any) => {
-        // 2 oyuncu arasındaki tahmin etkileşimi
-        const roomPlayers = rooms.get(room);
-        if (roomPlayers) {
-          const otherPlayer = roomPlayers.find(
-            (player) => player.username !== username
-          );
-          if (otherPlayer) {
-            otherPlayer.score = score;
-            otherPlayer.username = username;
-
-            io.to(otherPlayer.socketId).emit("guessMade", {
-              letter,
-              username,
-              score: otherPlayer.score,
-            });
-          }
-        }
-      });
       console.log("New Connection", socket.id);
     };
 
