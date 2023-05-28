@@ -47,36 +47,59 @@ const Game = () => {
     });
 
     socket.on(
+      "setScore", 
+      ({
+        opponentScore
+      }: {
+        opponentScore: any
+      }) => {
+        setOpponentScore(opponentScore);
+      }
+    )
+
+    socket.on(
       "gameStarted",
       ({
         word,
         opponent,
       }: {
         word: string;
-        opponent: { username: string; score: number };
+        opponent: string;
       }) => {
+        console.log(word,opponent)
         setGameStarted(true);
         setWaitingForSecondPlayer(false);
         setWord(word.toLowerCase());
-        setOpponentUsername(opponent.username);
-        setOpponentScore(opponent.score);
+        setOpponentUsername(opponent);        
       }
     );
   }
 
   const handleGuess = (letter: any, event: any) => {
+
     const lowercaseLetter = letter.toLowerCase();
     setGuesses([...guesses, lowercaseLetter]);
 
+    let updatedScore = score;
+
     if (word.includes(lowercaseLetter)) {
-      const updatedScore = score + 10;
+      updatedScore += 10;
       event.target.disabled = "disabled";
       event.currentTarget.setAttribute("founded", "founded");
       setScore(updatedScore);
     } else {
       const updatedAttempts = remainingAttempts - 1;
+      updatedScore -= 10;
       event.target.disabled = "disabled";
       setRemainingAttempts(updatedAttempts);
+    }
+    if (socket) {
+      socket.emit("guessMade", {
+        letter,
+        room,
+        username,
+        score: updatedScore,
+      });
     }
   };
 
@@ -179,7 +202,16 @@ const Game = () => {
       button.removeAttribute("founded");
     });
   };
-
+  useEffect(() => {
+    if (socket) {
+      socket.on("guessMade", (data: any) => {
+        console.log(data);
+        if (data.username !== username) {
+          setOpponentScore(data.score);
+        }
+      });
+    }
+  }, [socket, username]);
   return (
     <div className={styles.hangman_game}>
       <h1>Hangman Game</h1>
