@@ -7,7 +7,8 @@ export const config = {
     bodyParser: false,
   },
 };
-
+const users = new Map<string, any>();
+const userRooms = new Map<string, string>();
 const generateWord = () => {
   const randomIndex = Math.floor(Math.random() * wordsData.words.length);
   const randomWord = wordsData.words[randomIndex].toLowerCase();
@@ -21,52 +22,71 @@ export default async (req: NextApiRequest, res: any) => {
     });
 
     const onConnection = (socket: any) => {
-      socket.on("joinRoom",({ username, room }: any) => {
-          const random = Math.floor(Math.random() * 9000 + 1000);
-          username = username + "#" + random;
-          const word = generateWord();
-            
-          socket.join(room);
-          console.log(username);
-          //console.log(io.sockets.adapter.rooms); //odalar
-          //console.log(io.sockets.adapter.rooms.get(room)?.size);
-          //console.log(io.sockets.sockets); //bağlı kullanıcılar
-          socket.data = {username,score:0};
-          if(io.sockets.adapter.rooms.get(room)?.size == 2){
-            const opponent:any = 
-            Array.from(io.sockets.adapter.rooms.get(room) ?? [])
-            .filter((user:any) => user.data.username !== socket.data.username);
-            socket.to(socket.id).emit('gameStarted',{word,oponent:opponent.data.username});
-            socket.to(opponent.id).emit('gameStarted',{word,opponent:socket.data.username});
-            console.log(io.sockets.adapter.rooms.get(room));
-          }
-          if(io.sockets.adapter.rooms.get(room)?.size ?? 0 < 2){
-            console.log(io.sockets.adapter.rooms.get(room));
-          }
-        });
+      socket.on(
+        "joinRoom",
+        ({ username, room }: any, callback: (arg0: boolean) => void) => {
+          const user = {
+            username,
+            socketId: socket.id,
+            score: 0,
+          };
 
-      socket.on("guessMade", ({ letter, room, username, score }: any) => {
-        // 2 oyuncu arasındaki tahmin etkileşimi
-        const roomPlayers = Array.from(users.values()).filter(
-          (player) => userRooms.get(player.socketId) === room
-        );
-        if (roomPlayers) {
-          const otherPlayer = roomPlayers.find(
-            (player) => player.username !== username
+          users.set(socket.id, user);
+          userRooms.set(socket.id, room); // kullanıcının hangi odada olduğu
+
+          const playersInRoom = Array.from(users.values()).filter(
+            (player) => userRooms.get(player.socketId) === room
           );
-          console.log(otherPlayer);
-          if (otherPlayer) {
-            otherPlayer.score = score;
-            otherPlayer.username = username;
 
-            io.to(otherPlayer.socketId).emit("guessMade", {
-              letter,
-              username,
-              score,
+          if (playersInRoom.length === 2) {
+            const word = generateWord();
+            const [player1, player2] = playersInRoom;
+
+            io.to(player1.socketId).emit("gameStarted", {
+              word,
+              opponent: player2.username,
             });
+
+            io.to(player2.socketId).emit("gameStarted", {
+              word,
+              opponent: player1.username,
+            });
+          } else if (playersInRoom.length > 2) {
+            // Eğer iki oyuncudan fazlası varsa yeni bir oda oluştur
+            const newRoom = room + "-" + Date.now(); // Yeni oda adı
+            userRooms.set(socket.id, newRoom); // Kullanıcıyı yeni odaya taşı
+
+            socket.join(newRoom);
+            socket.join(newRoom + "." + username);
+            callback(true);
+          } else {
+            socket.join(room);
+            socket.join(room + "." + username);
+            callback(true);
           }
         }
+      );
+      socket.on("guessMade", ({ letter, room, username }: any) => {
+        const currentUser = users.get(socket.id);
+        const playersInRoom = Array.from(users.values()).filter(
+          // aynı odadaki oyuncuları buluyor
+          (player) => userRooms.get(player.socketId) === room
+        );
+
+        const opponent = playersInRoom.find(
+          (player) => player.username !== username
+        );
+
+        if (opponent) {
+          io.to(opponent.socketId).emit("opponentGuessMade", {
+            letter,
+            username: currentUser.username,
+            opponentScore: opponent.score,
+          });
+        }
       });
+
+      console.log("New Connection", socket.id);
     };
 
     res.socket.server.io = io;

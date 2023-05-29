@@ -47,36 +47,18 @@ const Game = () => {
     });
 
     socket.on(
-      "setScore", 
-      ({
-        opponentScore
-      }: {
-        opponentScore: any
-      }) => {
-        setOpponentScore(opponentScore);
-      }
-    )
-
-    socket.on(
       "gameStarted",
-      ({
-        word,
-        opponent,
-      }: {
-        word: string;
-        opponent: string;
-      }) => {
-        console.log(word,opponent)
+      ({ word, opponent }: { word: string; opponent: string }) => {
+        console.log(word, opponent);
         setGameStarted(true);
         setWaitingForSecondPlayer(false);
         setWord(word.toLowerCase());
-        setOpponentUsername(opponent);        
+        setOpponentUsername(opponent);
       }
     );
   }
 
   const handleGuess = (letter: any, event: any) => {
-
     const lowercaseLetter = letter.toLowerCase();
     setGuesses([...guesses, lowercaseLetter]);
 
@@ -93,15 +75,28 @@ const Game = () => {
       event.target.disabled = "disabled";
       setRemainingAttempts(updatedAttempts);
     }
+  };
+  useEffect(() => {
     if (socket) {
-      socket.emit("guessMade", {
-        letter,
-        room,
-        username,
-        score: updatedScore,
+      socket.on("guessMade", (data: any) => {
+        console.log(data);
+        if (data.username !== username) {
+          setOpponentScore(data.score);
+        }
       });
     }
-  };
+  }, [socket, username]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("opponentGuessMade", (data: any) => {
+        console.log(data);
+        if (data.username !== username) {
+          setOpponentScore(data.opponentScore);
+        }
+      });
+    }
+  }, [socket, username]);
 
   const renderWord = () => {
     if (gameStarted && word) {
@@ -202,16 +197,7 @@ const Game = () => {
       button.removeAttribute("founded");
     });
   };
-  useEffect(() => {
-    if (socket) {
-      socket.on("guessMade", (data: any) => {
-        console.log(data);
-        if (data.username !== username) {
-          setOpponentScore(data.score);
-        }
-      });
-    }
-  }, [socket, username]);
+
   return (
     <div className={styles.hangman_game}>
       <h1>Hangman Game</h1>
