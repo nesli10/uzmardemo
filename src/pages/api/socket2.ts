@@ -25,11 +25,11 @@ export default async (req: NextApiRequest, res: any) => {
       socket.on("joinRoom",({ username, room }: any, callback: (arg0: boolean) => void) => {
           
           if(socket.adapter.rooms.get(room)?.size ?? 0 < 2){
-            console.log(socket.id + " joined")
             socket.join(room);
           }
           else{
-            callback(false);
+           callback(false);
+           return;
           }
           
           //console.log(socket.adapter.rooms); //odalar
@@ -37,24 +37,21 @@ export default async (req: NextApiRequest, res: any) => {
           //console.log(socket.nsp.sockets); //bağlı kullanıcılar
           const random = Math.floor(Math.random() * 9000 + 1000);
           username = username + "#" + random;
-          socket.data = {username,score:0};
+          socket.data = {username,score:0}; //user dataları
            
           if(socket.adapter.rooms.get(room)?.size == 2){
             const word = generateWord();
             const opponentId:any = 
             Array.from(socket.adapter.rooms.get(room) ?? [])
-            .filter((user:any) =>  user !== socket.id)[0];
+            .filter((user:any) =>  user !== socket.id)[0]; // odadaki kişileri bulur
             const opponent= socket.nsp.sockets.get(opponentId);
-            //socket.to(socket.id).emit('gameStarted',{word,opponent:opponent.data.username});
-            console.log(socket.id);
-            console.log(opponent.id);
-            socket.to(opponentId).emit('gameStarted',{word,opponent:socket.data.username});
+            socket.to(room).emit('gameStarted',{word,opponent:socket.data.username});
             socket.emit('gameStarted',{word,opponent:opponent.data.username});
           }
           callback(true);
         });
 
-      socket.on("guessMade", ({ room, score }: any) => {
+      socket.on("guessMade", ({ room, score }: any) => { //karşı tarafı tahmin için
         const opponentId:any = 
             Array.from(socket.adapter.rooms.get(room) ?? [])
             .filter((user:any) =>  user !== socket.id)[0];
