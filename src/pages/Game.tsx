@@ -56,6 +56,10 @@ const Game = () => {
         setOpponentUsername(opponent);
       }
     );
+    socket.on("opponentGuessMade", ({ opponentScore }) => {
+      setOpponentScore(opponentScore);
+      console.log(opponentScore);
+    });
   }
 
   const handleGuess = (letter: any, event: any) => {
@@ -74,30 +78,28 @@ const Game = () => {
       updatedScore -= 10;
       event.target.disabled = "disabled";
       setRemainingAttempts(updatedAttempts);
+      setScore(updatedScore);
     }
-  };
-  useEffect(() => {
     if (socket) {
-      socket.on("guessMade", (data: any) => {
-        console.log(data);
-        if (data.username !== username) {
-          setOpponentScore(data.score);
-        }
+      socket.emit("guessMade", {
+        letter,
+        room,
+        username,
+        score: updatedScore,
       });
     }
-  }, [socket, username]);
+  };
 
   useEffect(() => {
     if (socket) {
-      socket.on("opponentGuessMade", (data: any) => {
-        console.log(data);
+      socket.on("guessMade", (data: any) => {
+        console.log("bb");
         if (data.username !== username) {
           setOpponentScore(data.opponentScore);
         }
       });
     }
   }, [socket, username]);
-
   const renderWord = () => {
     if (gameStarted && word) {
       return word

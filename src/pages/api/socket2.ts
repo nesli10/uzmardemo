@@ -7,8 +7,7 @@ export const config = {
     bodyParser: false,
   },
 };
-const users = new Map<string, any>();
-const userRooms = new Map<string, string>();
+
 const generateWord = () => {
   const randomIndex = Math.floor(Math.random() * wordsData.words.length);
   const randomWord = wordsData.words[randomIndex].toLowerCase();
@@ -20,6 +19,8 @@ export default async (req: NextApiRequest, res: any) => {
     const io = new ServerIO(res.socket.server, {
       addTrailingSlash: false,
     });
+    const users = new Map<string, any>();
+    const userRooms = new Map<string, string>();
 
     const onConnection = (socket: any) => {
       socket.on(
@@ -66,8 +67,12 @@ export default async (req: NextApiRequest, res: any) => {
           }
         }
       );
-      socket.on("guessMade", ({ letter, room, username }: any) => {
+      socket.on("guessMade", ({ letter, room, username, score }: any) => {
         const currentUser = users.get(socket.id);
+        if (!currentUser.score) {
+          currentUser.score = 0; // Başlangıç değeri olarak 0 atanır
+        }
+
         const playersInRoom = Array.from(users.values()).filter(
           // aynı odadaki oyuncuları buluyor
           (player) => userRooms.get(player.socketId) === room
@@ -84,6 +89,10 @@ export default async (req: NextApiRequest, res: any) => {
             opponentScore: opponent.score,
           });
         }
+        currentUser.score = score;
+        opponent.score = score;
+        console.log(opponent);
+        console.log(currentUser);
       });
 
       console.log("New Connection", socket.id);
