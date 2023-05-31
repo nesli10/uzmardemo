@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import styles from "../styles/Hangman.module.css";
-import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import io, { Socket } from "socket.io-client";
@@ -56,9 +55,26 @@ const Game = () => {
         setOpponentUsername(opponent);
       }
     );
+
     socket.on("opponentGuessMade", ({ opponentScore }) => {
       setOpponentScore(opponentScore);
-      console.log(opponentScore);
+    });
+    socket.on("gameOver", ({ result, score, word }) => {
+      if (result === "win") {
+        // Mevcut oyuncu kazandı
+        console.log("Tebrikler, oyunu kazandınız! Skorunuz: " + score);
+      } else if (result === "lose") {
+        // Mevcut oyuncu kaybetti
+        console.log(
+          "Maalesef, oyunu kaybettiniz. Doğru kelime: " +
+            word +
+            ". Skorunuz: " +
+            score
+        );
+      } else if (result === "draw") {
+        // Oyun berabere
+        console.log("Oyun berabere sonuçlandı. Skorunuz: " + score);
+      }
     });
   }
 
@@ -90,16 +106,6 @@ const Game = () => {
     }
   };
 
-  useEffect(() => {
-    if (socket) {
-      socket.on("guessMade", (data: any) => {
-        console.log("bb");
-        if (data.username !== username) {
-          setOpponentScore(data.opponentScore);
-        }
-      });
-    }
-  }, [socket, username]);
   const renderWord = () => {
     if (gameStarted && word) {
       return word
@@ -130,8 +136,7 @@ const Game = () => {
       </div>
     );
   };
-  const isGameWon = word.split("").every((letter) => guesses.includes(letter));
-  const isGameLost = remainingAttempts <= 0;
+
   const alphabet = "abcdefghijklmnopqrstuvwxyz";
 
   const renderButtons = () => {
@@ -140,64 +145,31 @@ const Game = () => {
         className={styles.word_button}
         key={letter}
         onClick={(e) => handleGuess(letter, e)}
-        disabled={
-          guesses.includes(letter) || remainingAttempts <= 0 || isGameWon
-        }
+        disabled={guesses.includes(letter) || remainingAttempts <= 0}
       >
         {letter}
       </button>
     ));
   };
 
-  const renderMessage = () => {
-    if (isGameWon) {
-      return (
-        <Alert
-          variant="filled"
-          severity="success"
-          style={{
-            width: "20rem",
-            alignItems: "center",
-            marginLeft: "47rem",
-          }}
-        >
-          Congratulations! You won!
-        </Alert>
-      );
-    } else if (isGameLost) {
-      return (
-        <Alert
-          variant="filled"
-          severity="error"
-          style={{
-            width: "20rem",
-            alignItems: "center",
-            marginLeft: "47rem",
-          }}
-        >
-          Game over! You lost. The word was: {word}
-        </Alert>
-      );
-    } else if (gameStarted) {
-      return null;
-    }
-  };
-
   const handleRestart = () => {
+    setRoom("");
     setGuesses([]);
     setRemainingAttempts(6);
     setScore(0);
     setWord("");
     setOpponentScore(0);
     setGameStarted(false);
-    setRoom("");
     setUsername("");
+    setWaitingForSecondPlayer(false);
+
     const wordButtons = document.querySelectorAll(
       `.${styles.word_button}[founded]`
     );
     wordButtons.forEach((button) => {
       button.removeAttribute("founded");
     });
+    window.location.reload();
   };
 
   return (
@@ -234,7 +206,6 @@ const Game = () => {
         <div>
           <h2>Welcome, {username}!</h2>
           <h3>Opponent: {opponentUsername}</h3>
-          {renderMessage()}
           <p className={styles.score}>Score: {score}</p>
           <div className={styles.opponentInfo}>
             <h3>Opponent's Score: {opponentScore}</h3>
