@@ -33,11 +33,10 @@ export default async (req: NextApiRequest, res: any) => {
 
           //console.log(socket.adapter.rooms); //odalar
           //console.log(socket.adapter.rooms.get(room)?.size);
-          //console.log(socket.nsp.sockets); //bağlı kullanıcılar
+          // console.log(socket.nsp.sockets); //bağlı kullanıcılar
           const random = Math.floor(Math.random() * 9000 + 1000);
           username = username + "#" + random;
           socket.data = { username, score: 0 }; //user dataları
-
           if (socket.adapter.rooms.get(room)?.size == 2) {
             const word = generateWord();
             const opponentId: any = Array.from(
@@ -59,7 +58,8 @@ export default async (req: NextApiRequest, res: any) => {
       socket.on(
         "guessMade",
         ({ room, score, remainingAttempts, word, guesses }: any) => {
-          //karşı tarafı tahmin için
+          socket.data.score = score;
+          //karşı tarafın tahmin için
           const opponentId: any = Array.from(
             socket.adapter.rooms.get(room) ?? []
           ).filter((user: any) => user !== socket.id)[0];
@@ -67,45 +67,47 @@ export default async (req: NextApiRequest, res: any) => {
             opponentScore: score,
           });
 
-          if (word === guesses) {
-            // Mevcut oyuncu kelimeyi doğru tahmin etti ve oyunu kazandı
-            socket.emit("gameOver", { result: "win", score: score });
-            const opponentId: any = Array.from(
-              socket.adapter.rooms.get(room) ?? []
-            ).filter((user: any) => user !== socket.id)[0];
+          const isGameWon = word
+            .split("")
+            .every((letter: any) => guesses.includes(letter));
+          if (isGameWon) {
+            // Kelime tamamen doğru tahmin edildi
+            socket.emit("gameOver", { result: "win", score: score, word });
+
+            const opponentScore =
+              socket.nsp.sockets.get(opponentId)?.data.score;
             socket
               .to(opponentId)
-              .emit("gameOver", { result: "lose", score: score });
-          } else {
-            // Oyuncu kelimeyi yanlış tahmin etti veya kalan deneme hakkı bitti
+              .emit("gameOver", { result: "lose", score: opponentScore, word });
+          } else if (remainingAttempts === 0) {
+            socket.data.remainingAttempts = 0;
+            const opponentId = Array.from(
+              socket.adapter.rooms.get(room) ?? []
+            ).find((user) => user !== socket.id);
+            const opponentScore =
+              socket.nsp.sockets.get(opponentId)?.data.score;
 
-            if (remainingAttempts === 0) {
-              // Oyun berabere, kalan deneme hakkı bitti ve kimse kelimeyi doğru tahmin edemedi
-              const opponentId: any = Array.from(
-                socket.adapter.rooms.get(room) ?? []
-              ).filter((user: any) => user !== socket.id)[0];
-              const opponentScore =
-                socket.nsp.sockets.get(opponentId)?.data.score;
-
-              if (score > opponentScore) {
-                // Mevcut oyuncunun skoru rakibin skorundan büyükse
-                socket.emit("gameOver", { result: "win", score: score });
-                socket
-                  .to(opponentId)
-                  .emit("gameOver", { result: "lose", score: score });
-              } else if (score < opponentScore) {
-                // Mevcut oyuncunun skoru rakibin skorundan küçükse
-                socket.emit("gameOver", { result: "lose", score: score });
-                socket
-                  .to(opponentId)
-                  .emit("gameOver", { result: "win", score: score });
-              } else {
-                // Skorlar eşitse
-                socket.emit("gameOver", { result: "draw", score: score });
-                socket
-                  .to(opponentId)
-                  .emit("gameOver", { result: "draw", score: score });
-              }
+            if (score > opponentScore) {
+              socket.emit("gameOver", { result: "win", score: score, word });
+              socket.to(opponentId).emit("gameOver", {
+                result: "lose",
+                score: opponentScore,
+                word,
+              });
+            } else if (score < opponentScore) {
+              socket.emit("gameOver", { result: "lose", score: score, word });
+              socket.to(opponentId).emit("gameOver", {
+                result: "win",
+                score: opponentScore,
+                word,
+              });
+            } else {
+              socket.emit("gameOver", { result: "draw", score: score, word });
+              socket.to(opponentId).emit("gameOver", {
+                result: "draw",
+                score: opponentScore,
+                word,
+              });
             }
           }
         }

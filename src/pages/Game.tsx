@@ -16,6 +16,7 @@ const Game = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [opponentUsername, setOpponentUsername] = useState("");
   const [opponentScore, setOpponentScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
 
   const handleUsernameChange = (event: any) => {
     setUsername(event.target.value);
@@ -60,12 +61,13 @@ const Game = () => {
       setOpponentScore(opponentScore);
     });
     socket.on("gameOver", ({ result, score, word }) => {
+      setGameOver(true);
       if (result === "win") {
         // Mevcut oyuncu kazandı
-        console.log("Tebrikler, oyunu kazandınız! Skorunuz: " + score);
+        alert("Tebrikler, oyunu kazandınız! Skorunuz: " + score);
       } else if (result === "lose") {
         // Mevcut oyuncu kaybetti
-        console.log(
+        alert(
           "Maalesef, oyunu kaybettiniz. Doğru kelime: " +
             word +
             ". Skorunuz: " +
@@ -73,16 +75,18 @@ const Game = () => {
         );
       } else if (result === "draw") {
         // Oyun berabere
-        console.log("Oyun berabere sonuçlandı. Skorunuz: " + score);
+        alert("Oyun berabere sonuçlandı.");
       }
     });
   }
 
   const handleGuess = (letter: any, event: any) => {
     const lowercaseLetter = letter.toLowerCase();
-    setGuesses([...guesses, lowercaseLetter]);
+    const sendGuesses = [...guesses, lowercaseLetter];
+    setGuesses(sendGuesses);
 
     let updatedScore = score;
+    let updatedAttempts = remainingAttempts;
 
     if (word.includes(lowercaseLetter)) {
       updatedScore += 10;
@@ -90,11 +94,11 @@ const Game = () => {
       event.currentTarget.setAttribute("founded", "founded");
       setScore(updatedScore);
     } else {
-      const updatedAttempts = remainingAttempts - 1;
       updatedScore -= 10;
-      event.target.disabled = "disabled";
+      updatedAttempts -= 1;
       setRemainingAttempts(updatedAttempts);
       setScore(updatedScore);
+      event.target.disabled = "disabled";
     }
     if (socket) {
       socket.emit("guessMade", {
@@ -102,6 +106,9 @@ const Game = () => {
         room,
         username,
         score: updatedScore,
+        word,
+        remainingAttempts: updatedAttempts,
+        guesses: sendGuesses,
       });
     }
   };
@@ -145,7 +152,9 @@ const Game = () => {
         className={styles.word_button}
         key={letter}
         onClick={(e) => handleGuess(letter, e)}
-        disabled={guesses.includes(letter) || remainingAttempts <= 0}
+        disabled={
+          guesses.includes(letter) || remainingAttempts <= 0 || gameOver
+        }
       >
         {letter}
       </button>
