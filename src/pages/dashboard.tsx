@@ -17,7 +17,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { mainListItems } from "./listItems";
-import dynamic from "next/dynamic";
+//import Cke from "./Cke";
 import UserInfo from "./UserInfo";
 import Treeview from "./Treeview";
 import TreeviewForm from "./TreeviewForm";
@@ -97,7 +97,7 @@ function DashboardContent() {
   const toggleDrawer = () => {
     setOpen(!open);
   };
-  const Cke = dynamic(() => import("./Cke"), { ssr: false });
+
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
@@ -170,7 +170,7 @@ function DashboardContent() {
         >
           <Toolbar />
           <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-            <Cke></Cke>
+            {/* <Cke></Cke> */}
           </Container>
 
           <Grid
