@@ -213,10 +213,18 @@ const Game = () => {
         </div>
       ) : (
         <div>
-          <h2>Welcome, {username}!</h2>
-          <h3>Opponent: {opponentUsername}</h3>
-          <p className={styles.score}>Score: {score}</p>
-          <div className={styles.opponentInfo}>
+          <div style={{ marginRight: "40rem" }}>
+            <h2>Welcome, {username}</h2>
+            <p className={styles.score}>Score: {score}</p>
+          </div>
+          <div
+            style={{
+              marginLeft: "40rem",
+              position: "relative",
+              bottom: "5.6rem",
+            }}
+          >
+            <h3>Opponent: {opponentUsername}</h3>
             <h3>Opponent's Score: {opponentScore}</h3>
           </div>
           {renderHangman()}

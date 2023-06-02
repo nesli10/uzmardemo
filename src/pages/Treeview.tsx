@@ -11,7 +11,7 @@ import { useDispatch } from "react-redux";
 function renderTree(nodes: any) {
   if (nodes)
     return (
-      <TreeItem nodeId={nodes.id.toString()} label={nodes.label}>
+      <TreeItem key={nodes.id} nodeId={nodes.id.toString()} label={nodes.label}>
         {Array.isArray(nodes.children)
           ? nodes.children.map((node: any) => renderTree(node))
           : null}
