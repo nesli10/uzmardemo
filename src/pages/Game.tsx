@@ -132,11 +132,13 @@ const Game = () => {
     const imagePath = `./images/hangman_${wrongGuesses}.jpg`;
     return (
       <div className={styles.hangman_container}>
-        <img
-          src={imagePath}
-          alt={`Hangman ${wrongGuesses}`}
-          className={styles.hangman_image}
-        />
+        <picture>
+          <img
+            src={imagePath}
+            alt={`Hangman ${wrongGuesses}`}
+            className={styles.hangman_image}
+          />
+        </picture>
         <p className={styles.remaining_attempts}>
           Remaining Attempts: {remainingAttempts}
         </p>
