@@ -7,7 +7,7 @@ export const config = {
   },
 };
 
-export default async (req: NextApiRequest, res: any) => {
+const socket = async (req: NextApiRequest, res: any) => {
   if (!res.socket.server.io) {
     console.log("New Socket.io server...");
     const io = new ServerIO(res.socket.server, {
@@ -28,3 +28,4 @@ export default async (req: NextApiRequest, res: any) => {
 
   res.end();
 };
+export default socket;

@@ -14,7 +14,7 @@ const generateWord = () => {
   return randomWord;
 };
 
-export default async (req: NextApiRequest, res: any) => {
+const socket = async (req: NextApiRequest, res: any) => {
   if (!res.socket.server.io) {
     const io = new ServerIO(res.socket.server, {
       addTrailingSlash: false,
@@ -120,3 +120,4 @@ export default async (req: NextApiRequest, res: any) => {
 
   res.end();
 };
+export default socket;

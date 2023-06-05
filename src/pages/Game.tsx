@@ -60,19 +60,14 @@ const Game = () => {
     socket.on("opponentGuessMade", ({ opponentScore }) => {
       setOpponentScore(opponentScore);
     });
-    socket.on("gameOver", ({ result, score, word }) => {
+    socket.on("gameOver", ({ result, word }) => {
       setGameOver(true);
       if (result === "win") {
         // Mevcut oyuncu kazandı
-        alert("Tebrikler, oyunu kazandınız! Skorunuz: " + score);
+        alert("Tebrikler, oyunu kazandınız!  ");
       } else if (result === "lose") {
         // Mevcut oyuncu kaybetti
-        alert(
-          "Maalesef, oyunu kaybettiniz. Doğru kelime: " +
-            word +
-            ". Skorunuz: " +
-            score
-        );
+        alert("Maalesef, oyunu kaybettiniz. Doğru kelime: " + word);
       } else if (result === "draw") {
         // Oyun berabere
         alert("Oyun berabere sonuçlandı.");
