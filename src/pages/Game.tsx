@@ -22,12 +22,8 @@ const Game = () => {
     setUsername(event.target.value);
   };
 
-  const handleRoomChange = (event: any) => {
-    setRoom(event.target.value);
-  };
-
   const joinRoom = () => {
-    if (username && room) {
+    if (username) {
       socketInitializer();
     }
   };
@@ -37,7 +33,7 @@ const Game = () => {
 
     const socket = io();
 
-    socket.emit("joinRoom", { username, room }, (success: boolean) => {
+    socket.emit("joinRoom", { username }, (success: boolean) => {
       if (success) {
         setWaitingForSecondPlayer(true);
         setSocket(socket);
@@ -190,14 +186,7 @@ const Game = () => {
             label="Enter your username"
             variant="outlined"
           />
-          <TextField
-            style={{ marginLeft: "15px" }}
-            id="outlined-basic"
-            value={room}
-            onChange={handleRoomChange}
-            label="Enter the room ID"
-            variant="outlined"
-          />
+
           <Button
             style={{ margin: "15px" }}
             variant="contained"

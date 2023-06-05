@@ -13,8 +13,22 @@ const generateWord = () => {
   const randomWord = wordsData.words[randomIndex].toLowerCase();
   return randomWord;
 };
+const generateRoomId = () => {
+  const characters =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const roomIdLength = 6; // Oluşturulacak room ID'sinin uzunluğu
+
+  let roomId = "";
+  for (let i = 0; i < roomIdLength; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    roomId += characters[randomIndex];
+  }
+
+  return roomId;
+};
 
 const socket = async (req: NextApiRequest, res: any) => {
+  const rooms = new Map<string, any[]>();
   if (!res.socket.server.io) {
     const io = new ServerIO(res.socket.server, {
       addTrailingSlash: false,
@@ -23,13 +37,33 @@ const socket = async (req: NextApiRequest, res: any) => {
     const onConnection = (socket: any) => {
       socket.on(
         "joinRoom",
-        ({ username, room }: any, callback: (arg0: boolean) => void) => {
+        (
+          { username }: any,
+          callback: (arg0: boolean, arg1?: string) => void
+        ) => {
+          let room;
+
+          // İlk giren 2 kişiyi aynı odada tut
+          if (rooms.size < 2) {
+            const existingRoom = Array.from(rooms.keys())[0];
+            room = existingRoom;
+          } else {
+            // Sonraki girenleri farklı odalara yerleştir
+            room = generateRoomId();
+            rooms.set(room, []);
+          }
+
           if (socket.adapter.rooms.get(room)?.size ?? 0 < 2) {
             socket.join(room);
           } else {
-            callback(false);
-            return;
+            // Oda doluysa yeni bir oda oluştur ve oyuncuyu oraya yerleştir
+            room = generateRoomId();
+            rooms.set(room, []);
+            socket.join(room);
           }
+
+          // Odaya yeni oyuncuyu ekle
+          rooms.get(room)?.push(socket);
 
           //console.log(socket.adapter.rooms); //odalar
           //console.log(socket.adapter.rooms.get(room)?.size);
@@ -51,7 +85,7 @@ const socket = async (req: NextApiRequest, res: any) => {
               opponent: opponent.data.username,
             });
           }
-          callback(true);
+          callback(true, room);
         }
       );
 
