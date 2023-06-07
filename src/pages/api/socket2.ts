@@ -38,16 +38,16 @@ const socket = async (req: NextApiRequest, res: any) => {
         "joinRoom",
         ({ username }: any, callback: (arg0: boolean) => void) => {
           const connectedSockets = socket.nsp.sockets;
-          const socketObjects = Array.from(connectedSockets);
+          const socketObjects = Array.from(connectedSockets); //arraya çevirme
           const waitForSecondPlayer: any = socketObjects.filter(
             (socketData: any) => socketData[1].data?.isWait
-          )[0];
+          )[0]; // bekleyen oyuncuyu bulur
           let room = generateRoomId();
-          let isWait = true;
+          let isWait = true; //2.oyuncuyu beklemek için
           if (waitForSecondPlayer) {
-            socket.nsp.sockets.get(waitForSecondPlayer[0]).data.isWait = false;
-            room = waitForSecondPlayer[1].data.room;
-            isWait = false;
+            socket.nsp.sockets.get(waitForSecondPlayer[0]).data.isWait = false; //2.oyuncu artık beklenmiyor
+            room = waitForSecondPlayer[1].data.room; //var olan odaya katıldı
+            isWait = false; //başka beklenen oyuncu yok
           }
           if (socket.adapter.rooms.get(room)?.size ?? 0 < 2) {
             socket.join(room);
@@ -65,22 +65,20 @@ const socket = async (req: NextApiRequest, res: any) => {
             const word = generateWord();
             const opponentId: any = Array.from(
               socket.adapter.rooms.get(room) ?? []
-            ).filter((user: any) => user !== socket.id)[0]; // odadaki kişileri bulur
+            ).filter((user: any) => user !== socket.id)[0]; // odadaki diğer kişileri bulur
             const opponent = socket.nsp.sockets.get(opponentId);
-            socket
-              .to(room)
-              .emit("gameStarted", {
-                room,
-                word,
-                opponent: socket.data.username,
-              });
+            socket.to(room).emit("gameStarted", {
+              room,
+              word,
+              opponent: socket.data.username,
+            });
             socket.emit("gameStarted", {
               room,
               word,
               opponent: opponent.data.username,
             });
           }
-          callback(true);
+          callback(true); //odaya katılım başarılı
         }
       );
 
@@ -88,21 +86,18 @@ const socket = async (req: NextApiRequest, res: any) => {
         "guessMade",
         ({ room, score, remainingAttempts, word, guesses }: any) => {
           socket.data.score = score;
-          //karşı tarafın tahmin için
           const opponentId: any = Array.from(
             socket.adapter.rooms.get(room) ?? []
           ).filter((user: any) => user !== socket.id)[0];
           socket.to(opponentId).emit("opponentGuessMade", {
             opponentScore: score,
-          });
-
+          }); //karşı tarafın tahmin için
           const isGameWon = word
             .split("")
             .every((letter: any) => guesses.includes(letter));
           if (isGameWon) {
             // Kelime tamamen doğru tahmin edildi
             socket.emit("gameOver", { result: "win", score: score, word });
-
             const opponentScore =
               socket.nsp.sockets.get(opponentId)?.data.score;
             socket
