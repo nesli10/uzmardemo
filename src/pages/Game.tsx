@@ -44,18 +44,23 @@ const Game = () => {
 
     socket.on(
       "gameStarted",
-      ({ word, opponent }: { word: string; opponent: string }) => {
-        console.log(word, opponent);
+      ({
+        room,
+        word,
+        opponent,
+      }: {
+        room: string;
+        word: string;
+        opponent: string;
+      }) => {
+        setRoom(room);
+        console.log(word, { opponent, room });
         setGameStarted(true);
         setWaitingForSecondPlayer(false);
         setWord(word.toLowerCase());
         setOpponentUsername(opponent);
       }
     );
-    socket.on("getRoom", ({ room }) => {
-      setRoom(room);
-      //setWaitingForSecondPlayer(waitingForSecondPlayer);
-    });
 
     socket.on("opponentGuessMade", ({ opponentScore }) => {
       setOpponentScore(opponentScore);

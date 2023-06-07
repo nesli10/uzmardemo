@@ -13,6 +13,19 @@ const generateWord = () => {
   const randomWord = wordsData.words[randomIndex].toLowerCase();
   return randomWord;
 };
+const generateRoomId = () => {
+  const characters =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const roomIdLength = 6; // Oluşturulacak room ID'sinin uzunluğu
+
+  let roomId = "";
+  for (let i = 0; i < roomIdLength; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    roomId += characters[randomIndex];
+  }
+
+  return roomId;
+};
 
 const socket = async (req: NextApiRequest, res: any) => {
   if (!res.socket.server.io) {
@@ -23,30 +36,31 @@ const socket = async (req: NextApiRequest, res: any) => {
     const onConnection = (socket: any) => {
       socket.on(
         "joinRoom",
-        (
-          { username }: any,
-          callback: (arg0: boolean, arg1?: string) => void
-        ) => {
-          const room = socket.id;
-          const waitingForSecondPlayer = room;
-          const opponentId: any = Array.from(
-            socket.adapter.rooms.get(room) ?? []
-          ).filter((user: any) => user !== socket.id)[0]; // odadaki kişileri bulur
-
+        ({ username }: any, callback: (arg0: boolean) => void) => {
+          const connectedSockets = socket.nsp.sockets;
+          const socketObjects = Array.from(connectedSockets);
+          const waitForSecondPlayer: any = socketObjects.filter(
+            (socketData: any) => socketData[1].data?.isWait
+          )[0];
+          let room = generateRoomId();
+          let isWait = true;
+          if (waitForSecondPlayer) {
+            socket.nsp.sockets.get(waitForSecondPlayer[0]).data.isWait = false;
+            room = waitForSecondPlayer[1].data.room;
+            isWait = false;
+          }
           if (socket.adapter.rooms.get(room)?.size ?? 0 < 2) {
             socket.join(room);
-            socket.emit("getRoom", { room: waitingForSecondPlayer });
           } else {
-            callback(false, "Room is full");
+            callback(false);
             return;
           }
-
           //console.log(socket.adapter.rooms); //odalar
           //console.log(socket.adapter.rooms.get(room)?.size);
-          //console.log(socket.nsp.sockets); //bağlı kullanıcılar
+          // console.log(socket.nsp.sockets); //bağlı kullanıcılar
           const random = Math.floor(Math.random() * 9000 + 1000);
           username = username + "#" + random;
-          socket.data = { username, score: 0 }; //user dataları
+          socket.data = { username, score: 0, room, isWait }; //user dataları
           if (socket.adapter.rooms.get(room)?.size == 2) {
             const word = generateWord();
             const opponentId: any = Array.from(
@@ -55,13 +69,18 @@ const socket = async (req: NextApiRequest, res: any) => {
             const opponent = socket.nsp.sockets.get(opponentId);
             socket
               .to(room)
-              .emit("gameStarted", { word, opponent: socket.data.username });
+              .emit("gameStarted", {
+                room,
+                word,
+                opponent: socket.data.username,
+              });
             socket.emit("gameStarted", {
+              room,
               word,
               opponent: opponent.data.username,
             });
           }
-          callback(true, room);
+          callback(true);
         }
       );
 
@@ -76,6 +95,7 @@ const socket = async (req: NextApiRequest, res: any) => {
           socket.to(opponentId).emit("opponentGuessMade", {
             opponentScore: score,
           });
+
           const isGameWon = word
             .split("")
             .every((letter: any) => guesses.includes(letter));
