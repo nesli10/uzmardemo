@@ -13,22 +13,8 @@ const generateWord = () => {
   const randomWord = wordsData.words[randomIndex].toLowerCase();
   return randomWord;
 };
-const generateRoomId = () => {
-  const characters =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const roomIdLength = 6; // Oluşturulacak room ID'sinin uzunluğu
-
-  let roomId = "";
-  for (let i = 0; i < roomIdLength; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    roomId += characters[randomIndex];
-  }
-
-  return roomId;
-};
 
 const socket = async (req: NextApiRequest, res: any) => {
-  const rooms = new Map<string, any[]>();
   if (!res.socket.server.io) {
     const io = new ServerIO(res.socket.server, {
       addTrailingSlash: false,
@@ -41,33 +27,23 @@ const socket = async (req: NextApiRequest, res: any) => {
           { username }: any,
           callback: (arg0: boolean, arg1?: string) => void
         ) => {
-          let room;
-
-          // İlk giren 2 kişiyi aynı odada tut
-          if (rooms.size < 2) {
-            const existingRoom = Array.from(rooms.keys())[0];
-            room = existingRoom;
-          } else {
-            // Sonraki girenleri farklı odalara yerleştir
-            room = generateRoomId();
-            rooms.set(room, []);
-          }
+          const room = socket.id;
+          const waitingForSecondPlayer = room;
+          const opponentId: any = Array.from(
+            socket.adapter.rooms.get(room) ?? []
+          ).filter((user: any) => user !== socket.id)[0]; // odadaki kişileri bulur
 
           if (socket.adapter.rooms.get(room)?.size ?? 0 < 2) {
             socket.join(room);
+            socket.emit("getRoom", { room: waitingForSecondPlayer });
           } else {
-            // Oda doluysa yeni bir oda oluştur ve oyuncuyu oraya yerleştir
-            room = generateRoomId();
-            rooms.set(room, []);
-            socket.join(room);
+            callback(false, "Room is full");
+            return;
           }
-
-          // Odaya yeni oyuncuyu ekle
-          rooms.get(room)?.push(socket);
 
           //console.log(socket.adapter.rooms); //odalar
           //console.log(socket.adapter.rooms.get(room)?.size);
-          // console.log(socket.nsp.sockets); //bağlı kullanıcılar
+          //console.log(socket.nsp.sockets); //bağlı kullanıcılar
           const random = Math.floor(Math.random() * 9000 + 1000);
           username = username + "#" + random;
           socket.data = { username, score: 0 }; //user dataları
@@ -100,7 +76,6 @@ const socket = async (req: NextApiRequest, res: any) => {
           socket.to(opponentId).emit("opponentGuessMade", {
             opponentScore: score,
           });
-
           const isGameWon = word
             .split("")
             .every((letter: any) => guesses.includes(letter));

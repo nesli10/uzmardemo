@@ -52,6 +52,10 @@ const Game = () => {
         setOpponentUsername(opponent);
       }
     );
+    socket.on("getRoom", ({ room }) => {
+      setRoom(room);
+      //setWaitingForSecondPlayer(waitingForSecondPlayer);
+    });
 
     socket.on("opponentGuessMade", ({ opponentScore }) => {
       setOpponentScore(opponentScore);
