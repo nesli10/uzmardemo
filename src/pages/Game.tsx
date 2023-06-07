@@ -68,13 +68,10 @@ const Game = () => {
     socket.on("gameOver", ({ result, word }) => {
       setGameOver(true);
       if (result === "win") {
-        // Mevcut oyuncu kazandı
         alert("Tebrikler, oyunu kazandınız!  ");
       } else if (result === "lose") {
-        // Mevcut oyuncu kaybetti
         alert("Maalesef, oyunu kaybettiniz. Doğru kelime: " + word);
       } else if (result === "draw") {
-        // Oyun berabere
         alert("Oyun berabere sonuçlandı.");
       }
     });
